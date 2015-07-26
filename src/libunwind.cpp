@@ -64,6 +64,9 @@ _LIBUNWIND_EXPORT int unw_init_local(unw_cursor_t *cursor,
 #elif LIBCXXABI_ARM_EHABI
   new ((void *)cursor) UnwindCursor<LocalAddressSpace, Registers_arm>(
                                  context, LocalAddressSpace::sThisAddressSpace);
+#elif defined(__or1k__)
+  new ((void *)cursor) UnwindCursor<LocalAddressSpace, Registers_or1k>(
+                                 context, LocalAddressSpace::sThisAddressSpace);
 #endif
   AbstractUnwindCursor *co = (AbstractUnwindCursor *)cursor;
   co->setInfoBasedOnIPRegister();

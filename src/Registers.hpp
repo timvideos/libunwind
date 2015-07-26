@@ -1712,7 +1712,371 @@ inline v128 Registers_arm::getVectorRegister(int) const {
 inline void Registers_arm::setVectorRegister(int, v128) {
   _LIBUNWIND_ABORT("ARM vector support not implemented");
 }
+/// Registers_or1k holds the register state of a thread in an OpenRISC1000
+/// process.
+class _LIBUNWIND_HIDDEN Registers_or1k {
+public:
+  Registers_or1k();
+  Registers_or1k(const void *registers);
 
+  bool        validRegister(int num) const;
+  uint32_t    getRegister(int num) const;
+  void        setRegister(int num, uint32_t value);
+  bool        validFloatRegister(int num) const;
+  double      getFloatRegister(int num) const;
+  void        setFloatRegister(int num, double value);
+  bool        validVectorRegister(int num) const;
+  v128        getVectorRegister(int num) const;
+  void        setVectorRegister(int num, v128 value);
+  const char *getRegisterName(int num);
+  void        jumpto();
+  static int  lastDwarfRegNum() { return 31; }
+
+  uint64_t  getSP() const         { return _registers.__r1; }
+  void      setSP(uint32_t value) { _registers.__r1 = value; }
+  uint64_t  getIP() const         { return _registers.__r9; }
+  void      setIP(uint32_t value) { _registers.__r9 = value; }
+
+private:
+  struct or1k_thread_state_t {
+    unsigned int __r0;
+    unsigned int __r1;
+    unsigned int __r2;
+    unsigned int __r3;
+    unsigned int __r4;
+    unsigned int __r5;
+    unsigned int __r6;
+    unsigned int __r7;
+    unsigned int __r8;
+    unsigned int __r9;
+    unsigned int __r10;
+    unsigned int __r11;
+    unsigned int __r12;
+    unsigned int __r13;
+    unsigned int __r14;
+    unsigned int __r15;
+    unsigned int __r16;
+    unsigned int __r17;
+    unsigned int __r18;
+    unsigned int __r19;
+    unsigned int __r20;
+    unsigned int __r21;
+    unsigned int __r22;
+    unsigned int __r23;
+    unsigned int __r24;
+    unsigned int __r25;
+    unsigned int __r26;
+    unsigned int __r27;
+    unsigned int __r28;
+    unsigned int __r29;
+    unsigned int __r30;
+    unsigned int __r31;
+  };
+
+  or1k_thread_state_t _registers;
+};
+
+inline Registers_or1k::Registers_or1k(const void *registers) {
+  static_assert(sizeof(Registers_or1k) < sizeof(unw_context_t),
+                    "or1k registers do not fit into unw_context_t");
+  memcpy(&_registers, static_cast<const uint8_t *>(registers),
+         sizeof(_registers));
+}
+
+inline Registers_or1k::Registers_or1k() {
+  memset(&_registers, 0, sizeof(_registers));
+}
+
+inline bool Registers_or1k::validRegister(int regNum) const {
+  if (regNum == UNW_REG_IP)
+    return true;
+  if (regNum == UNW_REG_SP)
+    return true;
+  if (regNum < 0)
+    return false;
+  if (regNum <= UNW_OR1K_R31)
+    return true;
+  return false;
+}
+
+inline uint32_t Registers_or1k::getRegister(int regNum) const {
+  switch (regNum) {
+  case UNW_REG_IP:
+    return _registers.__r9;
+  case UNW_REG_SP:
+    return _registers.__r1;
+  case UNW_OR1K_R0:
+    return _registers.__r0;
+  case UNW_OR1K_R1:
+    return _registers.__r1;
+  case UNW_OR1K_R2:
+    return _registers.__r2;
+  case UNW_OR1K_R3:
+    return _registers.__r3;
+  case UNW_OR1K_R4:
+    return _registers.__r4;
+  case UNW_OR1K_R5:
+    return _registers.__r5;
+  case UNW_OR1K_R6:
+    return _registers.__r6;
+  case UNW_OR1K_R7:
+    return _registers.__r7;
+  case UNW_OR1K_R8:
+    return _registers.__r8;
+  case UNW_OR1K_R9:
+    return _registers.__r9;
+  case UNW_OR1K_R10:
+    return _registers.__r10;
+  case UNW_OR1K_R11:
+    return _registers.__r11;
+  case UNW_OR1K_R12:
+    return _registers.__r12;
+  case UNW_OR1K_R13:
+    return _registers.__r13;
+  case UNW_OR1K_R14:
+    return _registers.__r14;
+  case UNW_OR1K_R15:
+    return _registers.__r15;
+  case UNW_OR1K_R16:
+    return _registers.__r16;
+  case UNW_OR1K_R17:
+    return _registers.__r17;
+  case UNW_OR1K_R18:
+    return _registers.__r18;
+  case UNW_OR1K_R19:
+    return _registers.__r19;
+  case UNW_OR1K_R20:
+    return _registers.__r20;
+  case UNW_OR1K_R21:
+    return _registers.__r21;
+  case UNW_OR1K_R22:
+    return _registers.__r22;
+  case UNW_OR1K_R23:
+    return _registers.__r23;
+  case UNW_OR1K_R24:
+    return _registers.__r24;
+  case UNW_OR1K_R25:
+    return _registers.__r25;
+  case UNW_OR1K_R26:
+    return _registers.__r26;
+  case UNW_OR1K_R27:
+    return _registers.__r27;
+  case UNW_OR1K_R28:
+    return _registers.__r28;
+  case UNW_OR1K_R29:
+    return _registers.__r29;
+  case UNW_OR1K_R30:
+    return _registers.__r30;
+  case UNW_OR1K_R31:
+    return _registers.__r31;
+  }
+  _LIBUNWIND_ABORT("unsupported or1k register");
+}
+
+inline void Registers_or1k::setRegister(int regNum, uint32_t value) {
+  //fprintf(stderr, "Registers_or1k::setRegister(%d, 0x%08X)\n", regNum, value);
+  switch (regNum) {
+  case UNW_REG_IP:
+    _registers.__r9 = value;
+    return;
+  case UNW_REG_SP:
+    _registers.__r1 = value;
+    return;
+  case UNW_OR1K_R0:
+    _registers.__r0 = value;
+    return;
+  case UNW_OR1K_R1:
+    _registers.__r1 = value;
+    return;
+  case UNW_OR1K_R2:
+    _registers.__r2 = value;
+    return;
+  case UNW_OR1K_R3:
+    _registers.__r3 = value;
+    return;
+  case UNW_OR1K_R4:
+    _registers.__r4 = value;
+    return;
+  case UNW_OR1K_R5:
+    _registers.__r5 = value;
+    return;
+  case UNW_OR1K_R6:
+    _registers.__r6 = value;
+    return;
+  case UNW_OR1K_R7:
+    _registers.__r7 = value;
+    return;
+  case UNW_OR1K_R8:
+    _registers.__r8 = value;
+    return;
+  case UNW_OR1K_R9:
+    _registers.__r9 = value;
+    return;
+  case UNW_OR1K_R10:
+    _registers.__r10 = value;
+    return;
+  case UNW_OR1K_R11:
+    _registers.__r11 = value;
+    return;
+  case UNW_OR1K_R12:
+    _registers.__r12 = value;
+    return;
+  case UNW_OR1K_R13:
+    _registers.__r13 = value;
+    return;
+  case UNW_OR1K_R14:
+    _registers.__r14 = value;
+    return;
+  case UNW_OR1K_R15:
+    _registers.__r15 = value;
+    return;
+  case UNW_OR1K_R16:
+    _registers.__r16 = value;
+    return;
+  case UNW_OR1K_R17:
+    _registers.__r17 = value;
+    return;
+  case UNW_OR1K_R18:
+    _registers.__r18 = value;
+    return;
+  case UNW_OR1K_R19:
+    _registers.__r19 = value;
+    return;
+  case UNW_OR1K_R20:
+    _registers.__r20 = value;
+    return;
+  case UNW_OR1K_R21:
+    _registers.__r21 = value;
+    return;
+  case UNW_OR1K_R22:
+    _registers.__r22 = value;
+    return;
+  case UNW_OR1K_R23:
+    _registers.__r23 = value;
+    return;
+  case UNW_OR1K_R24:
+    _registers.__r24 = value;
+    return;
+  case UNW_OR1K_R25:
+    _registers.__r25 = value;
+    return;
+  case UNW_OR1K_R26:
+    _registers.__r26 = value;
+    return;
+  case UNW_OR1K_R27:
+    _registers.__r27 = value;
+    return;
+  case UNW_OR1K_R28:
+    _registers.__r28 = value;
+    return;
+  case UNW_OR1K_R29:
+    _registers.__r29 = value;
+    return;
+  case UNW_OR1K_R30:
+    _registers.__r30 = value;
+    return;
+  case UNW_OR1K_R31:
+    _registers.__r31 = value;
+    return;
+  }
+  _LIBUNWIND_ABORT("unsupported or1k register");
+}
+
+inline bool Registers_or1k::validFloatRegister(int regNum) const {
+  return false;
+}
+
+inline double Registers_or1k::getFloatRegister(int regNum) const {
+  _LIBUNWIND_ABORT("or1k float support not implemented");
+}
+
+inline void Registers_or1k::setFloatRegister(int regNum, double value) {
+  _LIBUNWIND_ABORT("or1k float support not implemented");
+}
+
+inline bool Registers_or1k::validVectorRegister(int regNum) const {
+  return false;
+}
+
+inline v128 Registers_or1k::getVectorRegister(int regNum) const {
+  _LIBUNWIND_ABORT("or1k vector support not implemented");
+}
+
+inline void Registers_or1k::setVectorRegister(int regNum, v128 value) {
+  _LIBUNWIND_ABORT("or1k vector support not implemented");
+}
+
+inline const char *Registers_or1k::getRegisterName(int regNum) {
+  switch (regNum) {
+  case UNW_OR1K_R0:
+    return "r0";
+  case UNW_OR1K_R1:
+    return "r1";
+  case UNW_OR1K_R2:
+    return "r2";
+  case UNW_OR1K_R3:
+    return "r3";
+  case UNW_OR1K_R4:
+    return "r4";
+  case UNW_OR1K_R5:
+    return "r5";
+  case UNW_OR1K_R6:
+    return "r6";
+  case UNW_OR1K_R7:
+    return "r7";
+  case UNW_OR1K_R8:
+    return "r8";
+  case UNW_OR1K_R9:
+    return "r9";
+  case UNW_OR1K_R10:
+    return "r10";
+  case UNW_OR1K_R11:
+    return "r11";
+  case UNW_OR1K_R12:
+    return "r12";
+  case UNW_OR1K_R13:
+    return "r13";
+  case UNW_OR1K_R14:
+    return "r14";
+  case UNW_OR1K_R15:
+    return "r15";
+  case UNW_OR1K_R16:
+    return "r16";
+  case UNW_OR1K_R17:
+    return "r17";
+  case UNW_OR1K_R18:
+    return "r18";
+  case UNW_OR1K_R19:
+    return "r19";
+  case UNW_OR1K_R20:
+    return "r20";
+  case UNW_OR1K_R21:
+    return "r21";
+  case UNW_OR1K_R22:
+    return "r22";
+  case UNW_OR1K_R23:
+    return "r23";
+  case UNW_OR1K_R24:
+    return "r24";
+  case UNW_OR1K_R25:
+    return "r25";
+  case UNW_OR1K_R26:
+    return "r26";
+  case UNW_OR1K_R27:
+    return "r27";
+  case UNW_OR1K_R28:
+    return "r28";
+  case UNW_OR1K_R29:
+    return "r29";
+  case UNW_OR1K_R30:
+    return "r30";
+  case UNW_OR1K_R31:
+    return "r31";
+  default:
+    return "unknown register";
+  }
+
+}
 } // namespace libunwind
 
 #endif // __REGISTERS_HPP__
