@@ -304,7 +304,7 @@ _LIBUNWIND_EXPORT void unw_save_vfp_as_X(unw_cursor_t *cursor) {
 #endif
 
 
-#if _LIBUNWIND_SUPPORT_DWARF_UNWIND
+#if !defined(_LIBUNWIND_NO_HEAP) && _LIBUNWIND_SUPPORT_DWARF_UNWIND
 /// SPI: walks cached dwarf entries
 _LIBUNWIND_EXPORT void unw_iterate_dwarf_unwind_cache(void (*func)(
     unw_word_t ip_start, unw_word_t ip_end, unw_word_t fde, unw_word_t mh)) {
@@ -338,7 +338,7 @@ void _unw_remove_dynamic_fde(unw_word_t fde) {
   // fde is own mh_group
   DwarfFDECache<LocalAddressSpace>::removeAllIn((LocalAddressSpace::pint_t)fde);
 }
-#endif // _LIBUNWIND_SUPPORT_DWARF_UNWIND
+#endif // !defined(_LIBUNWIND_NO_HEAP) && _LIBUNWIND_SUPPORT_DWARF_UNWIND
 
 
 

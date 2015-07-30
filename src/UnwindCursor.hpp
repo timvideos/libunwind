@@ -895,8 +895,12 @@ bool UnwindCursor<A, R>::getInfoFromDwarfSection(pint_t pc,
   #if _LIBUNWIND_SUPPORT_DWARF_INDEX
         if (sects.dwarf_index_section == 0)
   #endif
+  #ifdef _LIBUNWIND_NO_HEAP
+        ;
+  #else
         DwarfFDECache<A>::add(sects.dso_base, fdeInfo.pcStart, fdeInfo.pcEnd,
                               fdeInfo.fdeStart);
+  #endif
       }
       return true;
     }
